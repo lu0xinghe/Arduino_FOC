@@ -98,8 +98,6 @@ float pi(float target,float actual)
   return Output;
 }
 
-int a;
-
 void loop() {
 
   float Sensor_Angle = getAngle();
