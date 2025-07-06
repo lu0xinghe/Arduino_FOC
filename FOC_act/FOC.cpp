@@ -60,9 +60,6 @@ static void Svpwm(int* judge, float* U_in,float *T_out)//Uad
 		case 6:T_out[0] = T_xyz[1]+T_xyz[2];         T_out[1] = T_xyz[2];                  T_out[2] = T_xyz[0]+T_xyz[1]+T_xyz[2];break;
 		case 2:T_out[0] = T_xyz[0]+T_xyz[1]+T_xyz[2];T_out[1] = T_xyz[2];                  T_out[2] = T_xyz[0]+T_xyz[2];break;
 	}
-    // if(N==100){printf("%f,%f,",U_ab[0],U_ab[1]);N=0;}
-    
-    // printf("%f,%f,%f,%f,",T_out[1]-0.5,T_out[2]-0.5,T_out[0]-0.5,angle);
 }
 
 void FOC_act(float Uq,float T_update)//T_update,�ⲿ����,�Ƕȵĸ���������STM32��ʱ��������һʱ���뵱ǰʱ�����Ŀ���ٶ���˵õ�

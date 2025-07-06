@@ -102,13 +102,13 @@ void loop() {
 
   float Sensor_Angle = getAngle();
   float Kp = 0.133;
-  velocityOpenloop(31.4*7);
-  // FOC_act(_constrain(Kp * (motor_target - DIR * Sensor_Angle) * 180 / PI, -6, 6),_electricalAngle());
-  // setPwm(T_vector[0],T_vector[1],T_vector[2]);
+  // velocityOpenloop(31.4*7);
+  FOC_act(_constrain(Kp * (motor_target - DIR * Sensor_Angle) * 180 / PI, -6, 6),_electricalAngle());
+  setPwm(T_vector[0],T_vector[1],T_vector[2]);
   i++;
   if(i==100)
   {
-    printf("%f,%f,%f\r\n",Sensor_Angle, _electricalAngle(),_constrain(Kp * (motor_target - DIR * Sensor_Angle) * 180 / PI, -6, 6));
+    printf("%f,%f,%f\r\n",Sensor_Angle*180/3.1415926, _electricalAngle(),_constrain(Kp * (motor_target - DIR * Sensor_Angle) * 180 / PI, -6, 6));
     i=0;
   }
 }
