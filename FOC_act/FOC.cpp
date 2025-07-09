@@ -8,7 +8,7 @@
 // 全局变量定义（只在这里定义一次）
 float X = 1.732f * T_pwm / U_dc;
 float angle = 0, angle_act = 0;
-float U_dq[2] = {0}; // Ud, Uq
+float U_dq[2] = {0,0}; // Ud, Uq
 float U_ab[2], T_vector[3];
 int judge = 0;
 int* j = &judge;

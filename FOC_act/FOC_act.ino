@@ -12,10 +12,11 @@ int pwmC = 25;
 int pinA = 39;
 int pinB = 36;
 int i=0;
-
+unsigned long now_us;
 float shaft_angle = 0, open_loop_timestamp = 0,zero_electric_angle = 0;
 float motor_target=3.14;
 float current_ab[2],I_dq[2];
+float Ts;
 
 int PP = 7, DIR = 1;
 float _electricalAngle() {
@@ -45,10 +46,10 @@ void ADCInline(const int pinA,const int pinB){
 }
 
 float velocityOpenloop(float target_velocity) {
-  unsigned long now_us = micros();  //获取从开启芯片以来的微秒数，它的精度是 4 微秒。 micros() 返回的是一个无符号长整型（unsigned long）的值
+  now_us = micros();  //获取从开启芯片以来的微秒数，它的精度是 4 微秒。 micros() 返回的是一个无符号长整型（unsigned long）的值
 
   //计算当前每个Loop的运行时间间隔
-  float Ts = (now_us - open_loop_timestamp) * 1e-6f;
+  Ts = (now_us - open_loop_timestamp) * 1e-6f;
 
   //由于 micros() 函数返回的时间戳会在大约 70 分钟之后重新开始计数，在由70分钟跳变到0时，TS会出现异常，因此需要进行修正。如果时间间隔小于等于零或大于 0.5 秒，则将其设置为一个较小的默认值，即 1e-3f
   if (Ts <= 0 || Ts > 0.5f) Ts = 1e-3f;
@@ -59,7 +60,11 @@ float velocityOpenloop(float target_velocity) {
   //以目标速度为 10 rad/s 为例，如果时间间隔是 1 秒，则在每个循环中需要增加 10 * 1 = 10 弧度的角度变化量，才能使电机转动到目标速度。
   //如果时间间隔是 0.1 秒，那么在每个循环中需要增加的角度变化量就是 10 * 0.1 = 1 弧度，才能实现相同的目标速度。因此，电机轴的转动角度取决于目标速度和时间间隔的乘积。
 
-  FOC_act(6,shaft_angle);
+  // 计算电角度 = 机械角度 * 极对数
+  // float electrical_angle = _normalizeAngle(DIR * PP * shaft_angle - zero_electric_angle);
+  
+  FOC_act(6, shaft_angle);   // 传递电角度
+  current(I_dq, _electricalAngle()); // 传递电角度
   setPwm(T_vector[0],T_vector[1],T_vector[2]);
   open_loop_timestamp = now_us;  //用于计算下一个时间间隔
 
@@ -79,16 +84,10 @@ void setup() {
   ledcAttach(pwmA, 30000, 8);
   ledcAttach(pwmB, 30000, 8);
   ledcAttach(pwmC, 30000, 8);
-  // ledcSetup(0, 30000, 8);  //pwm频道, 频率, 精度
-  // ledcSetup(1, 30000, 8);  //pwm频道, 频率, 精度
-  // ledcSetup(2, 30000, 8);  //pwm频道, 频率, 精度
-  // ledcAttachPin(pwmA, 0);
-  // ledcAttachPin(pwmB, 1);
-  // ledcAttachPin(pwmC, 2);
   Serial.println("完成PWM初始化设置");
   BeginSensor();
 
-  FOC_act(6, _3PI_2);
+  FOC_act(3, _3PI_2);
   setPwm(T_vector[0],T_vector[1],T_vector[2]);
   delay(1000);
   zero_electric_angle = _electricalAngle();
@@ -96,24 +95,26 @@ void setup() {
   setPwm(T_vector[0],T_vector[1],T_vector[2]);
   Serial.print("0电角度：");
   Serial.println(zero_electric_angle);
+  
   delay(1000);
   // 配置函数
   ADCInline(pinA,pinB);
   // 校准
+  Serial.print("校准");
+  setPwm(0.5,0.5,0.5);
   offset(current_ab);
+  delay(1000);
 }
 
 void loop() {
   float Sensor_Angle = getAngle();
   float Kp = 0.133;
-  current(current_ab,I_dq,_electricalAngle());
   velocityOpenloop(3.14*7);
-  // FOC_act(_constrain(Kp * (motor_target - DIR * Sensor_Angle) * 180 / PI, -6, 6),_electricalAngle());
-  // setPwm(T_vector[0],T_vector[1],T_vector[2]);
+
   i++;
-  if(i==100)
-  {
-    printf("%f,%f,%f\r\n",zero_electric_angle, I_dq[0],I_dq[1]);
-    i=0;
+  if(i=50){
+  printf("%f,%f,%f,%f,%f,",_electricalAngle(),shaft_angle,T_vector[0],T_vector[1],T_vector[2]);
+  printf("%f,%f,%f,%f\r\n",current_ab[0]*(3.3f/4096),current_ab[1]*(3.3f/4096),I_dq[0],I_dq[1]);
+  i=0;
   }
 }
