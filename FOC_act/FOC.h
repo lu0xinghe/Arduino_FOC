@@ -14,6 +14,6 @@ extern int judge;
 extern int* j;
 
 // 函数声明
-void FOC_act(float Uq,float T_update);
+void FOC_act(float Ud,float Uq,float T_update);
 
 #endif

@@ -61,8 +61,9 @@ static void Svpwm(int* judge, float* U_in,float *T_out)//Uad
 	}
 }
 
-void FOC_act(float Uq,float T_update)//T_update,�ⲿ����,�Ƕȵĸ���������STM32��ʱ��������һʱ���뵱ǰʱ�����Ŀ���ٶ���˵õ�
+void FOC_act(float Ud,float Uq,float T_update)//T_update,�ⲿ����,�Ƕȵĸ���������STM32��ʱ��������һʱ���뵱ǰʱ�����Ŀ���ٶ���˵õ�
 {
+  U_dq[0] = Ud;
   U_dq[1] = Uq;
   angle_update(T_update);
 	RevPAKE(U_dq, U_ab);
